@@ -1,5 +1,3 @@
-#using color to detect the ball
-
 import numpy as np
 import cv2
 import time
@@ -7,10 +5,9 @@ import math
 from random import random
 
 def get_circle(image, radius, contours):
-	# print(image.shape)
 	width, height = image.shape
 	accumulator_matrix = np.zeros([width, height], dtype=int)
-	local_maxima = ()
+	local_maxima = (0, 0)
 	max_value = -1
 	for pixel in contours:
 		for theta in range(0, 361):
@@ -29,18 +26,14 @@ def get_circle(image, radius, contours):
 
 #TODO: function under work, currently has bugs and should not be used
 def get_probability(A, B, radius):
-	try:
-		d = math.sqrt( math.pow( (B[0] - A[0]), 2) + math.pow( (B[1] - A[1]), 2) )
-		if int(d) < ( 2 * radius):
-			a =  math.pow(radius, 2)
-			b = a
-			x = math.pow(radius, 2) / ( 2 * d )
-			z = math.pow(x, 2)
-			y = math.sqrt( math.abs( a - z) )
-			expected_area = math.pi * math.pow(radius, 2)
-			return ( a * math.asin(y/radius) + b * math.asin(y/radius) - y * (x + math.sqrt( z )) ) / expected_area
-	except: # TODO: detect why we would be obtaining invalid domains, in a - z, as sqrt requires N
+	x = A[0] - B[0] #delta x
+	y = A[1] - B[1] #delta y
+	d = math.sqrt( (x * x) + (y * y) ) / radius #distance between the two centers
+	if d > radius: #circles do not overlap
 		return 0
+
+	P = (2 * np.arccos(d/2) - d * math.sqrt( 1 - ( ( d * d ) ) / 4 ) ) / math.pi
+	return P
 
 GREEN_LOWER = (29, 86, 6) #represents the lower boundary for the green ball
 GREEN_UPPER = (64, 255, 255) #represents the upper boundary for the green we'll accept
@@ -50,7 +43,8 @@ IMG_HEIGHT = 540
 
 camera = cv2.VideoCapture(0) #access the camera, currently webcam 
 time.sleep(2) #allows the camera to load
-hugh_center = [0, 0]
+hugh_center = (0, 0)
+probability = 0
 
 
 SAMPLE_IMAGE = 'img_1036.jpg'
@@ -88,17 +82,15 @@ while True:
 		#and compute radius max and min based on reference object and obtained radius
 		if radius > 2:
 			cv2.circle(frame, center,radius, (255,0,0), 2) #draws circle in main image
+			cv2.circle(frame, hugh_center,radius, (0,0,0), 2)
 			# getting the hugh's radius is expensive, 
 			# and since the ball is static we don't need to update it for every frame
 			if random() < 0.1:
 				hugh_center = get_circle(modified_image, radius, outstading_object)
-				#TODO: probability function under work
-				# probability = get_probability(center, hugh_center, radius)
-				# print("prob: " + str(probability) )
+				if len(hugh_center) is not 0:
+					probability = get_probability(center, hugh_center, radius)
 
-			print(hugh_center)
-			cv2.putText(frame, 'H(I)', (hugh_center[0], hugh_center[1]), cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 0), 2)
-			cv2.circle(frame, (hugh_center[0], hugh_center[1]),radius, (0,0,0), 2)
+			cv2.putText(frame, str(probability * 100) + '%', hugh_center, cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 0), 2)
 
 
 
