@@ -4,6 +4,17 @@ import time
 import math
 from random import random
 
+GREEN_LOWER = (29, 86, 6) #represents the lower boundary for the green ball
+GREEN_UPPER = (64, 255, 255) #represents the upper boundary for the green we'll accept
+
+IMG_WIDTH = 600
+IMG_HEIGHT = 540
+
+camera = cv2.VideoCapture(0) #access the camera, currently webcam 
+time.sleep(2) #allows the camera to load
+hugh_center = (0, 0)
+probability = 0
+
 def get_circle(image, radius, contours):
 	width, height = image.shape
 	accumulator_matrix = np.zeros([width, height], dtype=int)
@@ -24,7 +35,6 @@ def get_circle(image, radius, contours):
 
 	return local_maxima
 
-#TODO: function under work, currently has bugs and should not be used
 def get_probability(A, B, radius):
 	x = A[0] - B[0] #delta x
 	y = A[1] - B[1] #delta y
@@ -35,19 +45,9 @@ def get_probability(A, B, radius):
 	P = (2 * np.arccos(d/2) - d * math.sqrt( 1 - ( ( d * d ) ) / 4 ) ) / math.pi
 	return P
 
-GREEN_LOWER = (29, 86, 6) #represents the lower boundary for the green ball
-GREEN_UPPER = (64, 255, 255) #represents the upper boundary for the green we'll accept
+def morphological_transformations():
+	pass
 
-IMG_WIDTH = 600
-IMG_HEIGHT = 540
-
-camera = cv2.VideoCapture(0) #access the camera, currently webcam 
-time.sleep(2) #allows the camera to load
-hugh_center = (0, 0)
-probability = 0
-
-
-SAMPLE_IMAGE = 'img_1036.jpg'
 while True:
 	valid, frame = camera.read()
 	#blur the image to decrease noise from high quality image, allows faster processing
@@ -67,7 +67,7 @@ while True:
 
 	#compute contours of our binary image
 	modified_image, contours, hierarchy = cv2.findContours(filtered, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-
+	print("Contours: " + str(type(contours)))
 	center = None
 	#only when something was found, we can draw contours
 	if len( contours ):
