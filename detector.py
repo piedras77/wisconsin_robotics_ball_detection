@@ -10,7 +10,7 @@ GREEN_UPPER = (64, 255, 255) #represents the upper boundary for the green we'll 
 IMG_WIDTH = 600
 IMG_HEIGHT = 540
 
-camera = cv2.VideoCapture(0) #access the camera, currently webcam 
+camera = cv2.VideoCapture(1) #access the camera, currently webcam 
 time.sleep(2) #allows the camera to load
 hugh_center = (0, 0)
 probability = 0

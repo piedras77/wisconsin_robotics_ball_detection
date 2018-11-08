@@ -39,8 +39,9 @@ class Decision():
     def decision(self, contour, frame):
         center_of_mass = (-1, -1)
         radius = 0
+        probability = 0
         if len(contour) is 0:
-            return center_of_mass, radius
+            return center_of_mass, radius, probability
 
         # gets the smalles possible circle that can enclose everything of the contour
         ((x,y), radius) = cv2.minEnclosingCircle(contour)
@@ -60,4 +61,4 @@ class Decision():
                         center_of_mass = center
 
 
-        return center_of_mass, radius
+        return center_of_mass, radius, probability
